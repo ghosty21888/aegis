@@ -1,0 +1,106 @@
+openapi: "3.1.0"
+info:
+  title: "{Project Name} API"
+  version: "0.1.0"
+  description: |
+    API contract for {Project Name}.
+    This is the single source of truth — all implementations must conform.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://api.example.com
+    description: Production
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint
+      tags: [system]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  timestamp:
+                    type: string
+                    format: date-time
+                required: [status, timestamp]
+
+  # --- Add your API endpoints below ---
+  # /api/v1/resource:
+  #   get:
+  #     operationId: listResources
+  #     summary: List resources
+  #     tags: [resources]
+  #     parameters:
+  #       - name: page
+  #         in: query
+  #         schema:
+  #           type: integer
+  #           minimum: 1
+  #           default: 1
+  #       - name: pageSize
+  #         in: query
+  #         schema:
+  #           type: integer
+  #           minimum: 1
+  #           maximum: 100
+  #           default: 20
+  #     responses:
+  #       "200":
+  #         description: Paginated list of resources
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/PaginatedResourceResponse"
+
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data: {}
+        error:
+          $ref: "#/components/schemas/ApiError"
+      required: [success]
+
+    ApiError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Error code from errors.yaml"
+        message:
+          type: string
+      required: [code, message]
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+      required: [page, pageSize, total]
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

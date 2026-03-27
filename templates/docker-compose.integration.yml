@@ -1,0 +1,74 @@
+# Integration Test Environment
+# Usage: docker compose -f docker-compose.integration.yml up --build --abort-on-container-exit
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # Alternative: MongoDB
+  # db:
+  #   image: mongo:7
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: test
+  #     MONGO_INITDB_ROOT_PASSWORD: test
+  #   healthcheck:
+  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://test:test@db:5432/test?sslmode=disable
+      - NODE_ENV=test
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - API_URL=http://backend:8080
+      - PORT=3000
+    ports:
+      - "3000:3000"
+
+  # Contract + Integration tests run against real services
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - API_URL=http://backend:8080
+      - FRONTEND_URL=http://frontend:3000
+    command: ["npm", "test", "--", "--testPathPattern=integration|contract"]

@@ -1,0 +1,51 @@
+# Error Code Registry
+# All error codes used in API responses. Implementations MUST use these codes.
+# Format: CODE: { message, httpStatus, description }
+
+errors:
+  # --- System Errors (SYS-xxx) ---
+  SYS_INTERNAL:
+    message: "Internal server error"
+    httpStatus: 500
+    description: "Unexpected server error. Check logs with requestId."
+
+  SYS_NOT_FOUND:
+    message: "Resource not found"
+    httpStatus: 404
+    description: "The requested resource does not exist."
+
+  SYS_BAD_REQUEST:
+    message: "Bad request"
+    httpStatus: 400
+    description: "Request body or parameters are malformed."
+
+  SYS_UNAUTHORIZED:
+    message: "Unauthorized"
+    httpStatus: 401
+    description: "Missing or invalid authentication credentials."
+
+  SYS_FORBIDDEN:
+    message: "Forbidden"
+    httpStatus: 403
+    description: "Authenticated but insufficient permissions."
+
+  SYS_CONFLICT:
+    message: "Conflict"
+    httpStatus: 409
+    description: "Resource already exists or state conflict."
+
+  SYS_RATE_LIMITED:
+    message: "Too many requests"
+    httpStatus: 429
+    description: "Rate limit exceeded. Retry after Retry-After header value."
+
+  SYS_VALIDATION:
+    message: "Validation error"
+    httpStatus: 422
+    description: "Request data failed validation. Check error details."
+
+  # --- Domain Errors (add project-specific codes below) ---
+  # BILLING_CARD_DECLINED:
+  #   message: "Card declined"
+  #   httpStatus: 402
+  #   description: "Payment method was declined by the processor."
