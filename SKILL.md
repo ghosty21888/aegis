@@ -27,22 +27,67 @@ bash scripts/init-project.sh /path/to/project
 This creates:
 - `contracts/` — API spec, shared types, error codes, event schemas
 - `docs/designs/` — Design Brief storage
-- Updates `CLAUDE.md` with Aegis constraints (if exists, appends; if not, creates from template)
+- `CLAUDE.md` with Aegis constraints
+- `.aegis/pre-commit.sh` + `.git/hooks/pre-commit` — hard guardrails
+- `.github/workflows/aegis-checks.yml` or `.gitlab-ci-aegis.yml` — CI pipeline
+- Language-specific linter/formatter configs (auto-detected)
 
 ## Workflow Overview
 
 ```
 Peter 提需求
+  → [L0] Auto-guardrails already installed (lint, type-check, format, contract validation)
   → [L1] Write Design Brief (docs/designs/NNN-feature.md)
   → Peter Review → approve / revise
   → [L2] Write Contract (contracts/api-spec.yaml + shared-types)
   → Peter Review → approve / revise
   → [L3] Dispatch CC with Aegis constraints (CLAUDE.md + contract + brief)
-  → CC implements → Contract Test must pass
+  → CC implements → pre-commit hook catches lint/type/format errors
+  → Contract Test must pass
   → [L4] Integration Test → E2E Test (playwright-forge)
   → [L5] Update PM tracking (Jira/scrum), close gaps
-  → PR with Implementation Summary → merge
+  → PR with Implementation Summary → CI pipeline validates → merge
 ```
+
+## Layer 0: Automated Guardrails (Machine-Enforced)
+
+Hard checks that don't depend on AI judgment. Two enforcement points:
+- **Pre-commit hook** — blocks bad commits locally
+- **CI pipeline** — blocks bad PRs remotely
+
+### Language-Adaptive Checks
+
+Auto-detected by `scripts/detect-stack.sh`:
+
+| Language | Lint | Type Check | Format | Additional |
+|----------|------|------------|--------|------------|
+| **TypeScript** | ESLint (`--max-warnings 0`) | `tsc --noEmit` | Prettier | — |
+| **JavaScript** | ESLint | — | Prettier | — |
+| **Go** | golangci-lint | `go vet` | `gofmt` | — |
+| **Python** | ruff check | mypy (optional) | ruff format | — |
+| **Rust** | clippy (`-D warnings`) | `cargo check` | `cargo fmt` | — |
+
+Plus **Aegis contract validation** (always, when `contracts/` exists):
+- YAML/JSON syntax
+- OpenAPI spec validity
+- No local shared-type redefinitions
+- CLAUDE.md references contracts
+
+### Setup
+
+Automatically run by `init-project.sh`, or manually:
+
+```bash
+bash scripts/setup-guardrails.sh /path/to/project [--ci github|gitlab]
+```
+
+### Bypass (emergency only)
+
+```bash
+git commit --no-verify  # skips pre-commit hook
+```
+
+CI pipeline cannot be bypassed — it's the final wall.
 
 ## Layer 1: Design
 
@@ -198,7 +243,9 @@ A story cannot close until all test subtasks pass.
 
 ## Scripts
 
-- `scripts/init-project.sh <project-path>` — Initialize Aegis structure in a project
+- `scripts/init-project.sh <project-path>` — Initialize Aegis structure + guardrails in a project
+- `scripts/setup-guardrails.sh <project-path> [--ci github|gitlab]` — Set up pre-commit hook + CI pipeline (language-adaptive)
+- `scripts/detect-stack.sh <project-path>` — Detect project languages/frameworks (JSON output)
 - `scripts/validate-contract.sh <project-path>` — Validate contract consistency
 - `scripts/generate-types.sh <project-path>` — Generate shared types from OpenAPI spec
 

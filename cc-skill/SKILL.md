@@ -112,3 +112,12 @@ docs/
 | API response doesn't match spec | Fix your code, not the spec |
 | Spec seems wrong | File Change Request, implement per current spec |
 | No contracts/ directory | These rules don't apply — standard development |
+| Pre-commit hook fails | Fix ALL issues before committing. Do NOT use `--no-verify` |
+| Lint/format errors | Run formatter (`prettier --write .` / `gofmt -w .` / `ruff format .` / `cargo fmt`) THEN commit |
+
+## R7: Pre-commit checks are mandatory
+- Projects with Aegis have a pre-commit hook (`.aegis/pre-commit.sh`)
+- It runs: lint → type-check → format-check → contract validation
+- **BEFORE committing, run the same checks yourself** — do not rely on the hook to catch errors
+- If the hook blocks your commit, fix the issues. Never bypass with `--no-verify`.
+- After finishing ALL code changes, run formatters as a final step before commit.

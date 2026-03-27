@@ -91,6 +91,20 @@ fi
 echo ""
 echo "🛡️  Aegis initialization complete!"
 echo ""
+
+# --- Auto-setup guardrails ---
+echo "🔧 Setting up hard guardrails (language-adaptive)..."
+echo ""
+# Detect CI platform from git remote
+CI_FLAG="github"
+if git -C "$PROJECT_PATH" remote get-url origin 2>/dev/null | grep -q "gitlab"; then
+  CI_FLAG="gitlab"
+fi
+bash "$SCRIPT_DIR/setup-guardrails.sh" "$PROJECT_PATH" --ci "$CI_FLAG" 2>&1 || {
+  echo "  ⚠️  Guardrails setup had issues (non-fatal). Run manually: bash scripts/setup-guardrails.sh $PROJECT_PATH"
+}
+
+echo ""
 echo "Next steps:"
 echo "  1. Edit CLAUDE.md — fill in project-specific details"
 echo "  2. Edit contracts/api-spec.yaml — define your API endpoints"
