@@ -1,120 +1,325 @@
-# Aegis — AI Development Quality Guardian
-
-> AgentSkill for OpenClaw
-
-## Description
-
-Aegis enforces structured quality assurance across AI-assisted development workflows.
-It provides a five-layer defense system: Design → Contract → Implementation → Verification → Project Management.
-
-**Activate when:** Starting a new feature, dispatching coding tasks, reviewing PRs, or managing multi-agent development workflows.
-
+---
+name: aegis
+description: >
+  Contract-driven, design-first quality guardrails for AI-assisted full-stack development.
+  Prevents project chaos at scale by enforcing a five-layer protection system: Design → Contract → Implementation → Verification → PM.
+  Use when: starting a new full-stack project, planning a non-trivial feature, dispatching frontend/backend work to coding agents,
+  coordinating multi-agent parallel development, setting up contract tests, or running integration/E2E verification.
+  Triggers on: "aegis init", "design brief", "write contract", "contract test", "integration test", "aegis verify",
+  "multi-agent coordination", "quality guardrails", "project setup with aegis".
 ---
 
-## Workflow
+# Aegis — AI Full-Stack Quality Guardrails
 
-### Phase 1: Design
+> _"AI writes code at the speed of thought. Aegis makes sure the thoughts are correct."_
 
-Before any non-trivial feature, create a Design Brief:
+Five-layer protection: **Design → Contract → Implementation → Verification → PM**.
+Each layer catches a different class of failure. Skip none.
 
-1. Read `templates/design-brief.md` for the template
-2. Fill in: Problem Statement, Architecture Overview, Key Decisions, Module Boundaries, API Surface, Known Gaps, Testing Strategy
-3. Submit for human review
-4. **Gate:** Do not proceed to Phase 2 until Design Brief is approved
+## Quick Start
 
-### Phase 2: Contract
+Initialize Aegis structure in an existing project:
 
-Define the API contract before writing implementation code:
-
-1. Create/update `contracts/api-spec.yaml` (OpenAPI 3.1)
-2. Create/update `contracts/shared-types.ts` (shared type definitions)
-3. Create/update `contracts/errors.yaml` (error code definitions)
-4. Submit for review
-5. **Gate:** Contract must be approved before implementation begins
-
-### Phase 3: Implementation
-
-When dispatching coding tasks (e.g., to Claude Code):
-
-1. Inject the project's `CLAUDE.md` (use `templates/claude-md.md` as base)
-2. Reference the relevant Design Brief
-3. Reference the contract files
-4. Include relevant code lessons / quality rules
-5. Define clear acceptance criteria including contract conformance
-
-**Contract Change Protocol:**
-- If an agent needs to modify the contract during implementation → **STOP**
-- Submit a Contract Change Request (what, why, impact)
-- Lead reviews and approves/rejects
-- If approved: update contract, notify all agents
-- If rejected: implement per existing contract
-
-### Phase 4: Verification
-
-Testing pyramid (bottom to top):
-
-1. **Unit Tests** — Pure logic, mocks allowed
-2. **Contract Tests** — Validate implementation conforms to `contracts/api-spec.yaml`
-3. **Integration Tests** — Real services via docker-compose
-4. **E2E Tests** — Full browser/API testing against real deployment
-
-**Key principle:** Mocks only at the unit test level. Everything above uses real services.
-
-### Phase 5: Project Management
-
-Track progress and gaps:
-
-1. Each feature → Story with subtasks (Design/Contract/Implementation/Testing)
-2. Each discovered gap → Issue (tagged with severity: blocking/non-blocking)
-3. Sprint planning includes gap triage
-4. Story cannot close until all subtasks (including tests) are done
-
----
-
-## Modes
-
-### Lite Mode
-For small features or single-stack work:
-- Simplified Design Brief
-- Contract + Contract Test required
-- Integration/E2E tests optional
-
-### Full Mode
-For large features or multi-stack work:
-- Complete Design Brief
-- Full contract suite
-- All test levels required
-- PM tracking with full subtask breakdown
-
----
-
-## Commands
-
-### Initialize a Project
 ```bash
 bash scripts/init-project.sh /path/to/project
 ```
 
-### Validate Contracts
+This creates:
+- `contracts/` — API spec, shared types, error codes, event schemas
+- `docs/designs/` — Design Brief storage
+- `CLAUDE.md` with Aegis constraints
+- `.aegis/pre-commit.sh` + `.git/hooks/pre-commit` — hard guardrails
+- `.github/workflows/aegis-checks.yml` or `.gitlab-ci-aegis.yml` — CI pipeline
+- Language-specific linter/formatter configs (auto-detected)
+
+## Workspace Architecture Detection
+
+Before entering the Aegis workflow, detect the project's architecture to choose the right contract strategy.
+
+### Auto-Detection Logic
+
+Run at `aegis init` or when first applying Aegis to a project:
+
+1. **Scan workspace root** for indicators:
+   - Both `frontend/` (or `client/`, `web/`, `app/`) AND `backend/` (or `server/`, `api/`, `services/`) directories → **Monorepo**
+   - Only one side present (e.g., only `src/` with frontend framework) → **Split Workspace**
+   - `package.json` with workspaces containing both frontend and backend → **Monorepo**
+   - Single-stack indicators only (e.g., pure Go API, pure React app) → **Split Workspace**
+
+2. **If Split Workspace detected**, ask the human:
+   ```
+   Detected: This workspace contains only {frontend|backend} code.
+   Where does the other side live?
+   
+   (a) Another repo managed by the same agent (I can access it)
+   (b) Another repo managed by a different agent/workspace (I cannot access it)
+   (c) This is actually a monorepo (I missed something — please point me to the other side)
+   ```
+
+3. **Set architecture mode** based on detection + confirmation:
+
+| Mode | Contract Location | Sync Method |
+|------|------------------|-------------|
+| **Monorepo** | `contracts/` in project root | Direct (same repo) |
+| **Multi-Repo, Single Agent** | Lead workspace's `contracts/`, copied to each repo | Copy before dispatch |
+| **Cross-Agent, Cross-Workspace** | Dedicated contract repository | Git submodule / package / lead copy-sync |
+
+### Architecture Mode Effects
+
+- **Monorepo:** Standard Aegis workflow — `contracts/` lives inside the project. All layers work as documented.
+- **Multi-Repo, Single Agent:** Lead (Forge) maintains the contract in its own workspace. Before dispatching each CC task, latest contract files are copied into the target repo. CC treats `contracts/` as read-only.
+- **Cross-Agent, Cross-Workspace:** Contract lives in an independent Git repository. Each agent's workspace integrates it via submodule, package, or copy-sync. Contract Change Requests go through the Lead who has merge rights on the contract repo. See `references/multi-agent-protocol.md` § Cross-Workspace Architecture for full protocol.
+
+### CLAUDE.md Adjustment by Mode
+
+The `templates/claude-md.md` contract section adapts based on mode:
+
+- **Monorepo:** `contracts/` is writable by Lead, read-only for dispatched CC (standard)
+- **Split/Cross:** Add explicit "Contract is external and read-only" constraint + Change Request instructions
+
+## Workflow Overview
+
+```
+Peter 提需求
+  → [L0] Auto-guardrails already installed (lint, type-check, format, contract validation)
+  → [L1] Write Design Brief (docs/designs/NNN-feature.md)
+  → Peter Review → approve / revise
+  → [L2] Write Contract (contracts/api-spec.yaml + shared-types)
+  → Peter Review → approve / revise
+  → [L3] Dispatch CC with Aegis constraints (CLAUDE.md + contract + brief)
+  → CC implements → pre-commit hook catches lint/type/format errors
+  → Contract Test must pass
+  → [L4] Integration Test → E2E Test (playwright-forge)
+  → [L5] Update PM tracking (Jira/scrum), close gaps
+  → PR with Implementation Summary → CI pipeline validates → merge
+```
+
+## Layer 0: Automated Guardrails (Machine-Enforced)
+
+Hard checks that don't depend on AI judgment. Two enforcement points:
+- **Pre-commit hook** — blocks bad commits locally
+- **CI pipeline** — blocks bad PRs remotely
+
+### Language-Adaptive Checks
+
+Auto-detected by `scripts/detect-stack.sh`:
+
+| Language | Lint | Type Check | Format | Additional |
+|----------|------|------------|--------|------------|
+| **TypeScript** | ESLint (`--max-warnings 0`) | `tsc --noEmit` | Prettier | — |
+| **JavaScript** | ESLint | — | Prettier | — |
+| **Go** | golangci-lint | `go vet` | `gofmt` | — |
+| **Python** | ruff check | mypy (optional) | ruff format | — |
+| **Rust** | clippy (`-D warnings`) | `cargo check` | `cargo fmt` | — |
+
+Plus **Aegis contract validation** (always, when `contracts/` exists):
+- YAML/JSON syntax
+- OpenAPI spec validity
+- No local shared-type redefinitions
+- CLAUDE.md references contracts
+
+### Setup
+
+Automatically run by `init-project.sh`, or manually:
+
 ```bash
-bash scripts/validate-contract.sh /path/to/project
+bash scripts/setup-guardrails.sh /path/to/project [--ci github|gitlab]
 ```
 
-### Generate Gap Report
+### Bypass (emergency only)
+
 ```bash
-bash scripts/gap-report.sh /path/to/project
+git commit --no-verify  # skips pre-commit hook
 ```
 
----
+CI pipeline cannot be bypassed — it's the final wall.
 
-## File Structure
+## Layer 1: Design
+
+Before any non-trivial feature, produce a Design Brief.
+
+### Write a Design Brief
+
+Use template: `templates/design-brief.md`
+
+```bash
+cp templates/design-brief.md docs/designs/NNN-feature-name.md
+```
+
+Fill in: Problem Statement, Architecture Overview (Mermaid/ASCII), Key Design Decisions,
+Module Boundaries, API Surface (summary), Known Gaps, Testing Strategy, Debugging Guide.
+
+**Every gap must be tagged:** `blocking` (stops downstream work) or `non-blocking` (can defer).
+
+### Implementation Summary
+
+After CC completes work, produce an Implementation Summary (attach to PR).
+Use template: `templates/implementation-summary.md`
+
+Covers: Design conformance (✅/⚠️), File map, New gaps discovered, Debug cheatsheet.
+
+## Layer 2: Contract
+
+Contract = single source of truth shared by all agents and humans.
+
+### Project Contract Structure
 
 ```
-aegis/
-├── SKILL.md              # This file
-├── README.md             # Public documentation
-├── templates/            # Project templates
-├── scripts/              # Automation scripts
-├── references/           # Detailed guides
-└── examples/             # Working examples
+contracts/
+├── api-spec.yaml          # OpenAPI 3.1 — REST API contract
+├── shared-types.ts        # Auto-generated from api-spec (DO NOT EDIT MANUALLY)
+├── events.schema.json     # WebSocket / async event schemas
+└── errors.yaml            # Unified error codes
 ```
+
+### Rules
+
+1. **Contract before code** — write/update contract before implementation.
+2. **Contract is the only truth** — frontend types and backend responses must match.
+3. **No unilateral changes** — any agent wanting to change contract must file a Change Request. Lead reviews, then updates and notifies all agents.
+4. **Contract is executable** — validated by OpenAPI tools + TypeScript compiler.
+
+### Contract Change Protocol
+
+When an agent discovers the contract needs modification:
+
+1. Agent writes a Contract Change Request: what, why, which modules affected.
+2. Lead (Forge) reviews.
+3. Approved → update contract + notify all related agents.
+4. Rejected → agent implements per original contract.
+
+See `references/contract-guide.md` for detailed contract-first development guide.
+
+## Layer 3: Implementation
+
+CC must build according to design + contract, not freestyle.
+
+### CLAUDE.md Enhancement
+
+Use template: `templates/claude-md.md`
+
+Key sections to enforce:
+- **Hard Constraints** (⛔) — violate = reject (contract conformance, no type redefinition, etc.)
+- **Code Standards** (📋) — naming, structure, logging, error handling
+- **Testing Requirements** (🧪) — contract tests mandatory for new APIs
+- **Dependencies & Contracts** (🔗) — paths to contract files
+
+### Dispatch Protocol
+
+When dispatching CC tasks, inject:
+
+1. `CLAUDE.md` (project constraints)
+2. Relevant Design Brief
+3. Contract file paths (tell CC to read them)
+4. Code Lessons (from `code-lessons.md` if applicable)
+5. Explicit acceptance criteria
+
+See `references/dispatch-protocol.md` for the full prompt template.
+
+### Multi-Agent Coordination
+
+When frontend + backend run in parallel:
+
+1. Both agents receive the same contract.
+2. Agents never communicate directly — all coordination via contract + lead.
+3. Contract Change Requests go through lead.
+4. Recommended sequence: contract → backend → contract test → frontend → integration test.
+
+**Cross-Workspace mode:** When agents operate in separate workspaces, contract lives in a dedicated repository. Each agent integrates via submodule/package/copy-sync and treats `contracts/` as read-only. Integration testing is orchestrated externally (Lead or CI).
+
+See `references/multi-agent-protocol.md` for coordination rules + Cross-Workspace Architecture protocol.
+
+## Layer 4: Verification
+
+Graduate from mock illusions to real verification.
+
+### Test Pyramid (AI-Dev Specialized)
+
+```
+        E2E Test              ← playwright-forge (real browser + real backend)
+      Integration Test        ← docker compose (real frontend + backend + DB)
+    Contract Test             ← each side validates against contract
+  Unit Test                   ← pure logic (mocking allowed here only)
+```
+
+**Key principle: Mocking only at the bottom layer. Everything above is real.**
+
+### Contract Tests
+
+- **Backend (Provider):** Validate API responses against OpenAPI spec.
+- **Frontend (Consumer):** Build test data from contract types, not ad-hoc mocks.
+
+See `references/testing-strategy.md` for examples and docker-compose integration template.
+
+### Integration & E2E
+
+- Integration: `docker-compose.integration.yml` — spins up real services.
+- E2E: Call playwright-forge for browser-level verification.
+- CI pipeline: `lint → type-check → unit → contract → build → integration → E2E`
+
+## Layer 5: Project Management
+
+Track design, gaps, and delivery status.
+
+### Gap Management
+
+Every discovered gap → tracked issue (Jira, GitHub Issues, or markdown backlog):
+- Source (which design brief or implementation)
+- Impact scope
+- Urgency: blocking / non-blocking
+- Suggested fix
+
+### Sprint Integration
+
+Story subtasks follow Aegis phases:
+`Design Review → Contract Definition → Backend Impl → Frontend Impl → Contract Test → Integration Test → E2E → Done`
+
+A story cannot close until all test subtasks pass.
+
+## Lite Mode vs Full Mode
+
+| | Lite | Full |
+|---|------|------|
+| **When** | Small feature, single-stack | Large feature, multi-stack |
+| Design Brief | Simplified (problem + solution + constraints) | Complete |
+| Contract | ✅ Required | ✅ Required |
+| Contract Test | ✅ Required | ✅ Required |
+| Integration Test | Optional | ✅ Required |
+| E2E Test | Optional | ✅ Required |
+| Implementation Summary | PR description | Standalone doc |
+
+## Scripts
+
+- `scripts/init-project.sh <project-path>` — Initialize Aegis structure + guardrails in a project
+- `scripts/setup-guardrails.sh <project-path> [--ci github|gitlab]` — Set up pre-commit hook + CI pipeline (language-adaptive)
+- `scripts/detect-stack.sh <project-path>` — Detect project languages/frameworks (JSON output)
+- `scripts/validate-contract.sh <project-path>` — Validate contract consistency
+- `scripts/generate-types.sh <project-path>` — Generate shared types from OpenAPI spec
+
+## Templates
+
+- `templates/design-brief.md` — Design Brief template
+- `templates/implementation-summary.md` — Post-implementation summary template
+- `templates/claude-md.md` — Enhanced CLAUDE.md template with Aegis constraints
+- `templates/api-spec-starter.yaml` — OpenAPI 3.1 starter spec
+- `templates/shared-types-starter.ts` — Shared types starter (typically auto-generated)
+- `templates/errors-starter.yaml` — Error code definition starter
+- `templates/docker-compose.integration.yml` — Integration test compose template
+
+## References
+
+- `references/contract-guide.md` — Contract-first development deep dive
+- `references/dispatch-protocol.md` — Full dispatch prompt template
+- `references/multi-agent-protocol.md` — Multi-agent coordination rules
+- `references/testing-strategy.md` — Testing strategy with examples
+
+## CC Skill (Claude Code Side)
+
+Aegis operates at two levels:
+- **This skill (OpenClaw):** Flow orchestration — when to design, when to contract, when to verify
+- **CC skill (`cc-skill/SKILL.md`):** Implementation discipline — CC auto-enforces contract rules while coding
+
+Install the CC skill to `~/.claude/skills/aegis/SKILL.md` so CC has persistent Aegis awareness.
+Without it, constraints only exist when manually injected into dispatch prompts — easy to forget, easy to skip.
+
+**铁律：** CC 版 Aegis 是铁律级规则。项目有 `contracts/` 目录时无条件生效。
