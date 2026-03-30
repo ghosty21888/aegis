@@ -2,6 +2,18 @@
 
 All notable changes to Aegis will be documented in this file.
 
+## [1.3.0] - 2026-03-30
+
+### Added
+- **Frontend Testing Standard** — mandatory Vitest + React Testing Library + MSW stack for frontend projects. Coverage requirements for API clients, data hooks, key components. MSW handlers must use contract-typed response data. CI gate: `pnpm test` must pass.
+- **Backend HTTP E2E Testing Standard** — every API endpoint must have HTTP-level integration tests against real server + real database. Per-endpoint coverage: 200/400/404/401 + mutation verification. No mocking internal dependencies.
+- **Test Strategy as Design Gate** — full-stack features require complete testing strategy (frontend + backend + E2E) in the Design Brief before code begins. Design Review blocks approval without it.
+
+### Changed
+- Updated testing pyramid to include frontend test layer explicitly
+- CI pipeline order updated: `lint → type-check → unit → frontend-test → contract → integration → build → E2E`
+- CC skill Phase 4 updated with same standards
+
 ## [1.2.0] - 2026-03-28
 
 ### Added
