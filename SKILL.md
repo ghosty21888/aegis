@@ -237,25 +237,51 @@ Graduate from mock illusions to real verification.
 
 ```
         E2E Test              ← playwright-forge (real browser + real backend)
-      Integration Test        ← docker compose (real frontend + backend + DB)
+      Integration Test        ← real HTTP server + real DB (no mocks)
     Contract Test             ← each side validates against contract
+  Frontend Test               ← Vitest + RTL + MSW (contract-typed mocks)
   Unit Test                   ← pure logic (mocking allowed here only)
 ```
 
 **Key principle: Mocking only at the bottom layer. Everything above is real.**
+
+### Frontend Tests (Production-Ready Standard)
+
+Required when project has frontend:
+- **Stack:** Vitest + React Testing Library + MSW
+- **Coverage:** API clients (normal/error/auth), data hooks (loading/success/error), key component rendering
+- **MSW:** Must mock every backend endpoint with contract-typed response data
+- **CI Gate:** `pnpm test` must pass — blocked PR if not
 
 ### Contract Tests
 
 - **Backend (Provider):** Validate API responses against OpenAPI spec.
 - **Frontend (Consumer):** Build test data from contract types, not ad-hoc mocks.
 
-See `references/testing-strategy.md` for examples and docker-compose integration template.
+### Backend Integration Tests (HTTP E2E Standard)
 
-### Integration & E2E
+Every API endpoint must have HTTP-level integration tests:
+- **Real HTTP server** — start the actual server, send real requests
+- **Real database** — isolated test DB, not mocks
+- **Coverage per endpoint:** happy path (200) + bad request (400) + not found (404) + auth failure (401)
+- **Mutation verification:** POST/PUT/DELETE → GET to confirm state change
+- **CI Gate:** must pass after contract tests, before build
 
-- Integration: `docker-compose.integration.yml` — spins up real services.
+### E2E Tests
+
 - E2E: Call playwright-forge for browser-level verification.
-- CI pipeline: `lint → type-check → unit → contract → build → integration → E2E`
+- CI pipeline: `lint → type-check → unit → frontend-test → contract → integration → build → E2E`
+
+### Test Strategy as Design Artifact
+
+**Full-stack features require a complete testing strategy in the Design Brief** (Design Review gate):
+1. Frontend: API client coverage, hook coverage, key components, MSW plan
+2. Backend integration: endpoint list, scenario matrix, DB setup
+3. E2E: critical user flows
+
+A Design Brief without testing strategy for a full-stack feature **cannot be approved**.
+
+See `references/testing-strategy.md` for detailed standards and examples.
 
 ## Layer 5: Project Management
 

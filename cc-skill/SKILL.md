@@ -143,20 +143,42 @@ If the contract needs changes:
 After implementation, validate quality:
 
 1. Run contract tests — `bash scripts/validate-contract.sh <project-path>`
-2. Generate gap report — `bash scripts/gap-report.sh <project-path>`
-3. Review: are all Design Brief items implemented?
-4. Review: do all endpoints have contract tests?
-5. **Gate:** All contract tests must pass before PR/MR
+2. Run frontend tests — `pnpm test` (if frontend exists)
+3. Run backend integration tests — HTTP E2E against real server + real DB
+4. Generate gap report — `bash scripts/gap-report.sh <project-path>`
+5. Review: are all Design Brief items implemented?
+6. Review: do all endpoints have contract + integration tests?
+7. **Gate:** All tests must pass before PR/MR
 
 ### Testing Hierarchy
 
 ```
-Unit Test         ← Mock external deps, test pure logic
+E2E Test          ← Playwright (real browser + real backend)
+Integration Test  ← Real HTTP server + real DB (no mocks)
 Contract Test     ← Validate against api-spec.yaml (NO mocking the contract)
-Integration Test  ← Real services via docker-compose.integration.yml
+Frontend Test     ← Vitest + React Testing Library + MSW (contract-typed mocks)
+Unit Test         ← Mock external deps, test pure logic
 ```
 
-Reference: `references/testing-strategy.md` for the full testing pyramid.
+### Frontend Testing (when project has frontend)
+
+- **Stack:** Vitest + React Testing Library + MSW
+- **Required coverage:** API clients (normal/error/auth), data hooks (loading/success/error), key components
+- **MSW handlers:** must mock every backend endpoint with data matching `contracts/shared-types.ts`
+- **CI gate:** `pnpm test` must pass — same blocking power as backend tests
+
+### Backend Integration Testing (HTTP E2E)
+
+- **Every endpoint** must have: happy path (200) + bad request (400) + not found (404) + auth failure (401)
+- **Real database** — isolated test DB, not mocks. Transactions or migrations for clean state.
+- **Mutation verification** — POST/PUT/DELETE → GET to confirm state change
+- **CI pipeline:** `lint → type-check → unit → frontend-test → contract → integration → build → E2E`
+
+### Test Strategy = Design Artifact
+
+Full-stack features require a complete testing strategy **in the Design Brief** before coding begins.
+
+Reference: `references/testing-strategy.md` for the full testing pyramid and standards.
 
 ## Phase 5: PM
 
